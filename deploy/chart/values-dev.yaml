@@ -1,0 +1,20 @@
+name: gateway
+namespace: network-services
+env: dev
+image: wayrudev.azurecr.io/gateway
+imageTag: latest
+port: 4050
+servicePort: 80 # used in ingress and service
+host: gateway.internal.wayru.tech # used in ingress
+keycloakUrl: https://kc-dev.wayru.tech
+keycloakRealm: wayru-dev
+idpServiceUrl: http://idp-api.network-services.svc.cluster.local
+healthPath: /health
+cpuRequest: 100m
+cpuLimit: 200m
+memoryRequest: 128Mi
+memoryLimit: 256Mi
+
+azureCsiClientID: "d21cae5b-73c5-4635-8fed-aa7cbecc3686"
+azureKeyvaultTenantID: "1c277c10-9c77-407a-90bd-92ac4670f98a"
+keyvaultName: "wayrudev-gateway-kv"

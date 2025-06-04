@@ -1,0 +1,103 @@
+trigger:
+  branches:
+    include:
+      - dev
+  paths:
+    include:
+      - apps/gateway/*
+      - pkg/*
+      - go.mod
+      - go.sum
+
+pr: none
+
+resources:
+  - repo: self
+
+variables:
+  # Container registry service connection established during pipeline creation
+  dockerRegistryServiceConnection: "wayrudev-registry"
+  imageRepository: "gateway"
+  containerRegistry: "wayrudev.azurecr.io"
+  dockerfilePath: "apps/gateway/Dockerfile"
+  tag: "$(Build.BuildId)"
+  kubernetesServiceConnection: "network-services-kubernetes-dev"
+  kubernetesClusterNamespace: "network-services"
+  environment: "network-services-dev"
+  helmChartPath: "$(Build.SourcesDirectory)/apps/gateway/deploy/chart"
+  helmReleaseName: "gateway"
+
+  # Agent VM image name
+  vmImageName: "ubuntu-latest"
+
+stages:
+  - stage: Build
+    displayName: Build and push stage
+    jobs:
+      - job: Build
+        displayName: Build and Push
+        pool:
+          vmImage: $(vmImageName)
+        steps:
+          - task: Docker@2
+            displayName: Build and push an image to container registry
+            inputs:
+              command: buildAndPush
+              repository: $(imageRepository)
+              dockerfile: $(dockerfilePath)
+              containerRegistry: $(dockerRegistryServiceConnection)
+              buildContext: "$(Build.SourcesDirectory)"
+              tags: |
+                $(tag)
+                latest
+
+          - upload: $(helmChartPath)
+            artifact: chart
+
+  - stage: Deploy
+    displayName: Deploy to Kubernetes
+    dependsOn: Build
+    jobs:
+      - deployment: Deploy
+        displayName: Deploy with Helm
+        pool:
+          vmImage: $(vmImageName)
+        environment: $(environment)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: HelmDeploy@0
+                  displayName: "Deploy Gateway with Helm"
+                  inputs:
+                    connectionType: "Kubernetes Service Connection"
+                    kubernetesServiceConnection: $(kubernetesServiceConnection)
+                    namespace: $(kubernetesClusterNamespace)
+                    command: "upgrade"
+                    chartType: "FilePath"
+                    chartPath: $(Pipeline.Workspace)/chart
+                    releaseName: $(helmReleaseName)
+                    install: true
+                    waitForExecution: true
+                    arguments: "--timeout 5m0s"
+                    valueFile: "$(Pipeline.Workspace)/chart/values-dev.yaml"
+                    overrideValues: |
+                      imageTag=$(tag)
+
+                - task: Kubernetes@1
+                  displayName: "Validate Deployment"
+                  inputs:
+                    connectionType: "Kubernetes Service Connection"
+                    kubernetesServiceEndpoint: $(kubernetesServiceConnection)
+                    namespace: $(kubernetesClusterNamespace)
+                    command: "get"
+                    arguments: "pods,svc -l app=$(helmReleaseName) -o wide"
+
+                - task: Kubernetes@1
+                  displayName: "Check Deployment Status"
+                  inputs:
+                    connectionType: "Kubernetes Service Connection"
+                    kubernetesServiceEndpoint: $(kubernetesServiceConnection)
+                    namespace: $(kubernetesClusterNamespace)
+                    command: "rollout"
+                    arguments: "status deployment/$(helmReleaseName) --timeout=120s"

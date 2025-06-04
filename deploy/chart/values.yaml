@@ -1,0 +1,17 @@
+name: gateway
+namespace: network-services
+env: local
+image: gateway
+imageTag: latest
+pullSecretName: ""
+port: 4050
+servicePort: 80 # used in ingress and service
+host: gateway.local # used in ingress
+keycloakUrl: http://keycloak:8080
+keycloakRealm: wayru-dev
+idpServiceUrl: idp.local
+cpuRequest: 100m
+cpuLimit: 200m
+memoryRequest: 128Mi
+memoryLimit: 256Mi
+healthPath: /health
