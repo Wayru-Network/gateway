@@ -5,10 +5,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Wayru-Network/network-services/apps/gateway/internal/infra"
-	"github.com/Wayru-Network/network-services/pkg/middleware"
-	"github.com/Wayru-Network/network-services/pkg/proxy"
-	"github.com/Wayru-Network/network-services/pkg/router"
+	"github.com/Wayru-Network/gateway/internal/infra"
+	"github.com/Wayru-Network/serve/middleware"
+	"github.com/Wayru-Network/serve/proxy"
+	"github.com/Wayru-Network/serve/router"
+	"go.uber.org/zap"
 )
 
 func health(w http.ResponseWriter, r *http.Request) {
@@ -17,7 +18,9 @@ func health(w http.ResponseWriter, r *http.Request) {
 }
 
 func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
-	r := router.NewRouter(middleware.Logger())
+	logger := zap.L()
+	infra.ConfigureServeLogger(logger)
+	r := router.NewRouter(middleware.RequestLogger())
 
 	// Keycloak config for any route that needs keycloak middleware auth
 	keycloakConfig := middleware.KeycloakAuthConfig{

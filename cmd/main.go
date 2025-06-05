@@ -4,9 +4,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Wayru-Network/network-services/apps/gateway/internal/infra"
-	"github.com/Wayru-Network/network-services/apps/gateway/internal/server"
-	"github.com/Wayru-Network/network-services/pkg/logger"
+	"github.com/Wayru-Network/gateway/internal/infra"
+	"github.com/Wayru-Network/gateway/internal/server"
 	"go.uber.org/zap"
 )
 
@@ -16,7 +15,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	logger, err := logger.Init(env.AppEnv)
+	logger, err := infra.InitLogger(env.AppEnv)
 	if err != nil {
 		log.Fatal(err)
 	}
