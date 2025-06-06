@@ -4,10 +4,13 @@ trigger:
       - dev
   paths:
     include:
-      - apps/gateway/*
+      - cmd/*
+      - internal/*
       - pkg/*
       - go.mod
       - go.sum
+      - Dockerfile
+      - deploy/*
 
 pr: none
 
@@ -19,12 +22,12 @@ variables:
   dockerRegistryServiceConnection: "wayrudev-registry"
   imageRepository: "gateway"
   containerRegistry: "wayrudev.azurecr.io"
-  dockerfilePath: "apps/gateway/Dockerfile"
+  dockerfilePath: "Dockerfile"
   tag: "$(Build.BuildId)"
   kubernetesServiceConnection: "network-services-kubernetes-dev"
   kubernetesClusterNamespace: "network-services"
   environment: "network-services-dev"
-  helmChartPath: "$(Build.SourcesDirectory)/apps/gateway/deploy/chart"
+  helmChartPath: "$(Build.SourcesDirectory)/deploy/chart"
   helmReleaseName: "gateway"
 
   # Agent VM image name
@@ -51,8 +54,12 @@ stages:
                 $(tag)
                 latest
 
-          - upload: $(helmChartPath)
-            artifact: chart
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Helm Chart'
+            inputs:
+              targetPath: $(helmChartPath)
+              artifact: 'chart'
+              publishLocation: 'pipeline'
 
   - stage: Deploy
     displayName: Deploy to Kubernetes
@@ -67,6 +74,12 @@ stages:
           runOnce:
             deploy:
               steps:
+                - task: DownloadPipelineArtifact@2
+                  displayName: 'Download Helm Chart'
+                  inputs:
+                    artifactName: 'chart'
+                    targetPath: '$(Pipeline.Workspace)/chart'
+
                 - task: HelmDeploy@0
                   displayName: "Deploy Gateway with Helm"
                   inputs:
