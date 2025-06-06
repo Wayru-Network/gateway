@@ -42,6 +42,18 @@ stages:
         pool:
           vmImage: $(vmImageName)
         steps:
+          - task: DownloadSecureFile@1
+            name: sshKey
+            displayName: 'Download SSH Key'
+            inputs:
+              secureFile: 'github_ssh_key'
+
+          - script: |
+              mkdir -p .ssh
+              cp $(sshKey.secureFilePath) .ssh/id_rsa
+              chmod 600 .ssh/id_rsa
+            displayName: 'Setup SSH Key'
+
           - task: Docker@2
             displayName: Build and push an image to container registry
             inputs:
