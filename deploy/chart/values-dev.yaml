@@ -5,7 +5,7 @@ image: wayrudev.azurecr.io/gateway
 imageTag: latest
 port: 4050
 servicePort: 80 # used in ingress and service
-host: gateway.internal.wayru.tech # used in ingress
+host: gateway-dev.api.az.wayru.tech # used in ingress
 keycloakUrl: https://kc-dev.wayru.tech
 keycloakRealm: wayru-dev
 idpServiceUrl: http://idp-api.network-services.svc.cluster.local
