@@ -9,6 +9,7 @@ host: network.wayru.tech # used in ingress
 keycloakUrl: https://kc-1.wayru.tech
 keycloakRealm: wayru
 idpServiceUrl: http://idp-api.network-services.svc.cluster.local
+mobileBackendUrl: http://mobile-backend.network-services.svc.cluster.local
 healthPath: /health
 cpuRequest: 200m
 memoryRequest: 256Mi

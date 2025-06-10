@@ -18,6 +18,8 @@ type GatewayEnvironment struct {
 	KeycloakClientSecret string
 	IdpServiceURL        string
 	IdpServiceKey        string
+	MobileBackendURL     string
+	MobileBackendKey     string
 }
 
 func LoadEnvironment() (GatewayEnvironment, error) {
@@ -65,6 +67,9 @@ func LoadEnvironment() (GatewayEnvironment, error) {
 		return GatewayEnvironment{}, errors.New("IDP_SERVICE_KEY not set")
 	}
 
+	mobileBackendURL := strings.TrimSpace(os.Getenv("MOBILE_BACKEND_URL"))
+	mobileBackendKey := strings.TrimSpace(os.Getenv("MOBILE_BACKEND_KEY"))
+
 	return GatewayEnvironment{
 		AppEnv:               appEnv,
 		Port:                 portInt,
@@ -74,5 +79,7 @@ func LoadEnvironment() (GatewayEnvironment, error) {
 		KeycloakClientSecret: keycloakClientSecret,
 		IdpServiceURL:        idpServiceURL,
 		IdpServiceKey:        idpServiceKey,
+		MobileBackendURL:     mobileBackendURL,
+		MobileBackendKey:     mobileBackendKey,
 	}, nil
 }

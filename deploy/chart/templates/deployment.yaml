@@ -65,6 +65,10 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.name }}
                   key: IDP_SERVICE_KEY
+            - name: MOBILE_BACKEND_URL
+              value: {{ .Values.mobileBackendUrl | quote }}
+            - name: MOBILE_BACKEND_KEY
+              value: secret
           ports:
             - containerPort: {{ int .Values.port }}
               name: http

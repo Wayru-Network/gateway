@@ -9,6 +9,7 @@ host: gateway-dev.api.az.wayru.tech # used in ingress
 keycloakUrl: https://kc-dev.wayru.tech
 keycloakRealm: wayru-dev
 idpServiceUrl: http://idp-api.network-services.svc.cluster.local
+mobileBackendUrl: http://mobile-backend.network-services.svc.cluster.local
 healthPath: /health
 cpuRequest: 100m
 cpuLimit: 200m

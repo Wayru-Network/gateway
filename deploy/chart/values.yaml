@@ -10,6 +10,7 @@ host: gateway.local # used in ingress
 keycloakUrl: http://keycloak:8080
 keycloakRealm: wayru-dev
 idpServiceUrl: idp.local
+mobileBackendUrl: mobile-backend.local
 cpuRequest: 100m
 cpuLimit: 200m
 memoryRequest: 128Mi
