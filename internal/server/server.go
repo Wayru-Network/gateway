@@ -43,18 +43,18 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 	// Proxy for temporary idp token (more specific path match takes precedence)
 	r.Get("/idp/profiles/token", idpProxy, middleware.KeycloakAuth(keycloakConfig))
 
-	// Proxy `/mobile` requests to mobile backend
+	// Proxy `/mobile-api` requests to mobile backend
 	if env.MobileBackendURL != "" && env.MobileBackendKey != "" {
 		mobileBackendProxy := proxy.NewProxy(proxy.ProxyOptions{
 			Target:      env.MobileBackendURL,
-			StripPrefix: "/mobile",
+			StripPrefix: "/mobile-api",
 			Headers:     map[string]string{"X-API-Key": env.MobileBackendKey},
 		})
 
-		r.Get("/mobile/", mobileBackendProxy)
-		r.Post("/mobile/", mobileBackendProxy)
-		r.Put("/mobile/", mobileBackendProxy)
-		r.Delete("/mobile/", mobileBackendProxy)
+		r.Get("/mobile-api/", mobileBackendProxy)
+		r.Post("/mobile-api/", mobileBackendProxy)
+		r.Put("/mobile-api/", mobileBackendProxy)
+		r.Delete("/mobile-api/", mobileBackendProxy)
 	}
 
 	// Health
