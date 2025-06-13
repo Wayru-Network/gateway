@@ -54,6 +54,7 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 			StripPrefix:      "/mobile-api",
 			Headers:          map[string]string{"X-API-Key": env.MobileBackendKey},
 			DisableForwarded: true,
+			OverrideHost:     "mobile.dev.api.az.wayru.tech",
 		})
 
 		r.Handle("/mobile-api/", mobileBackendProxy)

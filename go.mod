@@ -3,7 +3,7 @@ module github.com/Wayru-Network/gateway
 go 1.24.3
 
 require (
-	github.com/Wayru-Network/serve v0.0.0-20250613162146-f29dae87aa64
+	github.com/Wayru-Network/serve v0.0.0-20250613164914-f5fed49fc4e3
 	github.com/joho/godotenv v1.5.1
 	go.uber.org/zap v1.27.0
 )
