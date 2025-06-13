@@ -44,7 +44,11 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 	r.Get("/idp/profiles/token", idpProxy, middleware.KeycloakAuth(keycloakConfig))
 
 	// Proxy `/mobile-api` requests to mobile backend
+	logger.Info("About to register proxy for mobile-api requests")
 	if env.MobileBackendURL != "" && env.MobileBackendKey != "" {
+		msg := fmt.Sprintf("Env url %s", env.MobileBackendURL)
+		logger.Info(msg)
+
 		mobileBackendProxy := proxy.NewProxy(proxy.ProxyOptions{
 			Target:      env.MobileBackendURL,
 			StripPrefix: "/mobile-api",
