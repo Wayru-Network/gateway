@@ -50,15 +50,18 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 		logger.Info(msg)
 
 		mobileBackendProxy := proxy.NewProxy(proxy.ProxyOptions{
-			Target:      env.MobileBackendURL,
-			StripPrefix: "/mobile-api",
-			Headers:     map[string]string{"X-API-Key": env.MobileBackendKey},
+			Target:           env.MobileBackendURL,
+			StripPrefix:      "/mobile-api",
+			Headers:          map[string]string{"X-API-Key": env.MobileBackendKey},
+			DisableForwarded: true,
 		})
 
-		r.Get("/mobile-api/", mobileBackendProxy)
-		r.Post("/mobile-api/", mobileBackendProxy)
-		r.Put("/mobile-api/", mobileBackendProxy)
-		r.Delete("/mobile-api/", mobileBackendProxy)
+		r.Handle("/mobile-api/", mobileBackendProxy)
+
+		// r.Get("/mobile-api/", mobileBackendProxy)
+		// r.Post("/mobile-api/", mobileBackendProxy)
+		// r.Put("/mobile-api/", mobileBackendProxy)
+		// r.Delete("/mobile-api/", mobileBackendProxy)
 	}
 
 	// Health

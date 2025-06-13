@@ -1,5 +1,7 @@
-github.com/Wayru-Network/serve v0.0.0-20250611204101-9819445a72ad h1:dbLc3KV2Gd5crxZJ9THUbnB1ePZAGT62Hzv27zAK8aA=
-github.com/Wayru-Network/serve v0.0.0-20250611204101-9819445a72ad/go.mod h1:lwjFK5po4ARCPuKwuiDmfOf22fePEfS+Z6bak8Qc2u0=
+github.com/Wayru-Network/serve v0.0.0-20250613161430-557317860ec1 h1:OQDMN6qolxHLC/Ky3WLbQNDb15onJKoHtpoyjrStPng=
+github.com/Wayru-Network/serve v0.0.0-20250613161430-557317860ec1/go.mod h1:lwjFK5po4ARCPuKwuiDmfOf22fePEfS+Z6bak8Qc2u0=
+github.com/Wayru-Network/serve v0.0.0-20250613162146-f29dae87aa64 h1:6x+VkRps5zBcmtTwxPa9IhL7QlIxTHG9ClaBFg659gQ=
+github.com/Wayru-Network/serve v0.0.0-20250613162146-f29dae87aa64/go.mod h1:lwjFK5po4ARCPuKwuiDmfOf22fePEfS+Z6bak8Qc2u0=
 github.com/coder/websocket v1.8.13 h1:f3QZdXy7uGVz+4uCJy2nTZyM0yTBj8yANEHhqlXZ9FE=
 github.com/coder/websocket v1.8.13/go.mod h1:LNVeNrXQZfe5qhS9ALED3uA+l5pPqvwXg3CKoDBB2gs=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
