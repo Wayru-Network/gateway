@@ -4,10 +4,13 @@ trigger:
       - main
   paths:
     include:
-      - apps/gateway/*
+      - cmd/*
+      - internal/*
       - pkg/*
       - go.mod
       - go.sum
+      - Dockerfile
+      - deploy/*
 
 pr: none
 
@@ -39,6 +42,18 @@ stages:
         pool:
           vmImage: $(vmImageName)
         steps:
+          - task: DownloadSecureFile@1
+            name: sshKey
+            displayName: "Download SSH Key"
+            inputs:
+              secureFile: "github_ssh_key"
+
+          - script: |
+              mkdir -p .ssh
+              cp $(sshKey.secureFilePath) .ssh/id_rsa
+              chmod 600 .ssh/id_rsa
+            displayName: "Setup SSH Key"
+
           - task: Docker@2
             displayName: Build and push an image to container registry
             inputs:
@@ -51,8 +66,12 @@ stages:
                 $(tag)
                 latest
 
-          - upload: $(helmChartPath)
-            artifact: chart
+          - task: PublishPipelineArtifact@1
+            displayName: "Publish Helm Chart"
+            inputs:
+              targetPath: $(helmChartPath)
+              artifact: "chart"
+              publishLocation: "pipeline"
 
   - stage: Deploy
     displayName: Deploy to Kubernetes
@@ -67,6 +86,12 @@ stages:
           runOnce:
             deploy:
               steps:
+                - task: DownloadPipelineArtifact@2
+                  displayName: "Download Helm Chart"
+                  inputs:
+                    artifactName: "chart"
+                    targetPath: "$(Pipeline.Workspace)/chart"
+
                 - task: HelmDeploy@0
                   displayName: "Deploy Gateway with Helm"
                   inputs:
