@@ -22,12 +22,12 @@ variables:
   dockerRegistryServiceConnection: "wayruprod-registry"
   imageRepository: "gateway"
   containerRegistry: "wayruprod.azurecr.io"
-  dockerfilePath: "apps/gateway/Dockerfile"
+  dockerfilePath: "Dockerfile"
   tag: "$(Build.BuildId)"
   kubernetesServiceConnection: "network-services-kubernetes-prod"
   kubernetesClusterNamespace: "network-services"
   environment: "network-services-prod"
-  helmChartPath: "$(Build.SourcesDirectory)/apps/gateway/deploy/chart"
+  helmChartPath: "$(Build.SourcesDirectory)/deploy/chart"
   helmReleaseName: "gateway"
 
   # Agent VM image name
