@@ -10,5 +10,6 @@ require (
 
 require (
 	github.com/coder/websocket v1.8.13 // indirect
+	github.com/gorilla/websocket v1.5.3 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
 )

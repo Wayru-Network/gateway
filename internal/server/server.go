@@ -3,7 +3,6 @@ package server
 import (
 	"fmt"
 	"net/http"
-	"net/url"
 	"time"
 
 	"github.com/Wayru-Network/gateway/internal/infra"
@@ -50,35 +49,32 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 		msg := fmt.Sprintf("Env url %s", env.MobileBackendURL)
 		logger.Info(msg)
 
-		// Extract host from MobileBackendURL for OverrideHost
-		parsedURL, err := url.Parse(env.MobileBackendURL)
-		if err != nil {
-			logger.Error("Failed to parse MobileBackendURL", zap.Error(err))
-			return nil, err
-		}
-		hostFromURL := parsedURL.Host
-
 		mobileBackendProxy := proxy.NewProxy(proxy.ProxyOptions{
 			Target:           env.MobileBackendURL,
 			StripPrefix:      "/mobile-api",
 			Headers:          map[string]string{"X-API-Key": env.MobileBackendKey},
-			DisableForwarded: true,
-			OverrideHost:     hostFromURL,
+			DisableForwarded: false,
+			OverrideHost:     "",
+		})
+
+		// Proxy for Socket.IO connections
+		socketIOProxy := proxy.NewProxy(proxy.ProxyOptions{
+			Target:           env.MobileBackendURL,
+			StripPrefix:      "", // No strip prefix for socket.io
+			Headers:          map[string]string{"X-API-Key": env.MobileBackendKey},
+			DisableForwarded: false,
+			OverrideHost:     "",
 		})
 
 		r.Handle("/mobile-api/", mobileBackendProxy)
-
-		// r.Get("/mobile-api/", mobileBackendProxy)
-		// r.Post("/mobile-api/", mobileBackendProxy)
-		// r.Put("/mobile-api/", mobileBackendProxy)
-		// r.Delete("/mobile-api/", mobileBackendProxy)
+		r.Handle("/socket.io/", socketIOProxy)
 	}
 
 	// Health
 	r.Get("/health", health)
 
 	return &http.Server{
-		Addr:         fmt.Sprintf(":%d", env.Port),
+		Addr:         fmt.Sprintf("0.0.0.0:%d", env.Port),
 		Handler:      r,
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
