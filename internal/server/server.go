@@ -68,6 +68,16 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 
 		r.Handle("/mobile-api/", mobileBackendProxy)
 
+		// Proxy for Socket.IO connections
+		socketIOProxy := proxy.NewProxy(proxy.ProxyOptions{
+			Target:           env.MobileBackendURL,
+			StripPrefix:      "", // No strip prefix for socket.io
+			Headers:          map[string]string{"X-API-Key": env.MobileBackendKey},
+			DisableForwarded: false,
+			OverrideHost:     "",
+		})
+		r.Handle("/socket.io/", socketIOProxy)
+
 		// r.Get("/mobile-api/", mobileBackendProxy)
 		// r.Post("/mobile-api/", mobileBackendProxy)
 		// r.Put("/mobile-api/", mobileBackendProxy)
@@ -78,7 +88,7 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 	r.Get("/health", health)
 
 	return &http.Server{
-		Addr:         fmt.Sprintf(":%d", env.Port),
+    	Addr:         fmt.Sprintf("0.0.0.0:%d", env.Port),
 		Handler:      r,
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
