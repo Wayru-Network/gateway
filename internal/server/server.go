@@ -88,7 +88,7 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 	r.Get("/health", health)
 
 	return &http.Server{
-    	Addr:         fmt.Sprintf(":%d", env.Port),
+		Addr:         fmt.Sprintf(":%d", env.Port),
 		Handler:      r,
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
