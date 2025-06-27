@@ -71,12 +71,12 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 		// Proxy for Socket.IO connections
 		socketIOProxy := proxy.NewProxy(proxy.ProxyOptions{
 			Target:           env.MobileBackendURL,
-			StripPrefix:      "", // No strip prefix for socket.io
+			StripPrefix:      "/mobile-api", // No strip prefix for socket.io
 			Headers:          map[string]string{"X-API-Key": env.MobileBackendKey},
 			DisableForwarded: false,
 			OverrideHost:     "",
 		})
-		r.Handle("/socket.io/", socketIOProxy)
+		r.Handle("/mobile-api/socket.io/", socketIOProxy)
 
 		// r.Get("/mobile-api/", mobileBackendProxy)
 		// r.Post("/mobile-api/", mobileBackendProxy)
