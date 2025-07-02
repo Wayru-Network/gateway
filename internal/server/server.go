@@ -58,6 +58,24 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 		}
 		hostFromURL := parsedURL.Host
 
+		// Proxy for Socket.IO connections
+		socketIOProxy := proxy.NewProxy(proxy.ProxyOptions{
+			Target:           env.MobileBackendURL,
+			StripPrefix:      "/ws-mobile-api", // No strip prefix for socket.io
+			Headers:          map[string]string{"X-API-Key": env.MobileBackendKey},
+			DisableForwarded: false,
+			OverrideHost:     "",
+		})
+		r.Handle("/ws-mobile-api/socket.io/", socketIOProxy)
+
+		// Keycloak config for any route that needs keycloak middleware auth
+		keycloakConfig := middleware.KeycloakAuthConfig{
+			KeycloakUrl:   env.KeycloakUrl,
+			KeycloakRealm: env.KeycloakRealm,
+			ClientID:      env.KeycloakClientID,
+			ClientSecret:  env.KeycloakClientSecret,
+		}
+
 		mobileBackendProxy := proxy.NewProxy(proxy.ProxyOptions{
 			Target:           env.MobileBackendURL,
 			StripPrefix:      "/mobile-api",
@@ -66,22 +84,10 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 			OverrideHost:     hostFromURL,
 		})
 
-		r.Handle("/mobile-api/", mobileBackendProxy)
-
-		// Proxy for Socket.IO connections
-		socketIOProxy := proxy.NewProxy(proxy.ProxyOptions{
-			Target:           env.MobileBackendURL,
-			StripPrefix:      "/mobile-api", // No strip prefix for socket.io
-			Headers:          map[string]string{"X-API-Key": env.MobileBackendKey},
-			DisableForwarded: false,
-			OverrideHost:     "",
-		})
-		r.Handle("/mobile-api/socket.io/", socketIOProxy)
-
-		// r.Get("/mobile-api/", mobileBackendProxy)
-		// r.Post("/mobile-api/", mobileBackendProxy)
-		// r.Put("/mobile-api/", mobileBackendProxy)
-		// r.Delete("/mobile-api/", mobileBackendProxy)
+		r.Get("/mobile-api/", mobileBackendProxy, middleware.KeycloakAuth(keycloakConfig))
+		r.Post("/mobile-api/", mobileBackendProxy, middleware.KeycloakAuth(keycloakConfig))
+		r.Put("/mobile-api/", mobileBackendProxy, middleware.KeycloakAuth(keycloakConfig))
+		r.Delete("/mobile-api/", mobileBackendProxy, middleware.KeycloakAuth(keycloakConfig))
 	}
 
 	// Health
