@@ -21,7 +21,6 @@ go.work
 /dist/
 /build/
 /bin/
-/pkg/
 
 # IDE files
 .vscode/

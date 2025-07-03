@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Wayru-Network/gateway/internal/infra"
+	gwmiddleware "github.com/Wayru-Network/gateway/pkg/middleware"
 	"github.com/Wayru-Network/serve/middleware"
 	"github.com/Wayru-Network/serve/proxy"
 	"github.com/Wayru-Network/serve/router"
@@ -24,7 +25,7 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 	r := router.NewRouter(middleware.RequestLogger())
 
 	// Keycloak config for any route that needs keycloak middleware auth
-	keycloakConfig := middleware.KeycloakAuthConfig{
+	keycloakConfig := gwmiddleware.KeycloakAuthConfig{
 		KeycloakUrl:   env.KeycloakUrl,
 		KeycloakRealm: env.KeycloakRealm,
 		ClientID:      env.KeycloakClientID,
@@ -42,7 +43,7 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 	r.Get("/idp/", idpProxy)
 
 	// Proxy for temporary idp token (more specific path match takes precedence)
-	r.Get("/idp/profiles/token", idpProxy, middleware.KeycloakAuth(keycloakConfig))
+	r.Get("/idp/profiles/token", idpProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
 
 	// Proxy `/mobile-api` requests to mobile backend
 	logger.Info("About to register proxy for mobile-api requests")
@@ -69,7 +70,7 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 		r.Handle("/ws-mobile-api/socket.io/", socketIOProxy)
 
 		// Keycloak config for any route that needs keycloak middleware auth
-		keycloakConfig := middleware.KeycloakAuthConfig{
+		keycloakConfig := gwmiddleware.KeycloakAuthConfig{
 			KeycloakUrl:   env.KeycloakUrl,
 			KeycloakRealm: env.KeycloakRealm,
 			ClientID:      env.KeycloakClientID,
@@ -84,10 +85,10 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 			OverrideHost:     hostFromURL,
 		})
 
-		r.Get("/mobile-api/", mobileBackendProxy, middleware.KeycloakAuth(keycloakConfig))
-		r.Post("/mobile-api/", mobileBackendProxy, middleware.KeycloakAuth(keycloakConfig))
-		r.Put("/mobile-api/", mobileBackendProxy, middleware.KeycloakAuth(keycloakConfig))
-		r.Delete("/mobile-api/", mobileBackendProxy, middleware.KeycloakAuth(keycloakConfig))
+		r.Get("/mobile-api/", mobileBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
+		r.Post("/mobile-api/", mobileBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
+		r.Put("/mobile-api/", mobileBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
+		r.Delete("/mobile-api/", mobileBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
 	}
 
 	// Health
