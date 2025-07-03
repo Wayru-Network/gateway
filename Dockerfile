@@ -15,7 +15,7 @@ RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
 RUN git config --global url."git@github.com:".insteadOf "https://github.com/"
 
 # Set GOPRIVATE for private modules
-ENV GOPRIVATE=github.com/Wayru-Network/serve
+ENV GOPRIVATE=github.com/Wayru-Network/*
 
 COPY go.mod go.sum ./
 RUN go mod download
