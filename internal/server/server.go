@@ -89,6 +89,9 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 		r.Post("/mobile-api/", mobileBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
 		r.Put("/mobile-api/", mobileBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
 		r.Delete("/mobile-api/", mobileBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
+
+		// define public endpoints
+		r.Get("/mobile-api/esim/bundles", mobileBackendProxy)
 	}
 
 	// Health
