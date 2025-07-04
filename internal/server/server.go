@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Wayru-Network/gateway/internal/infra"
+	gwmiddleware "github.com/Wayru-Network/gateway/pkg/middleware"
 	"github.com/Wayru-Network/serve/middleware"
 	"github.com/Wayru-Network/serve/proxy"
 	"github.com/Wayru-Network/serve/router"
@@ -24,7 +25,7 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 	r := router.NewRouter(middleware.RequestLogger())
 
 	// Keycloak config for any route that needs keycloak middleware auth
-	keycloakConfig := middleware.KeycloakAuthConfig{
+	keycloakConfig := gwmiddleware.KeycloakAuthConfig{
 		KeycloakUrl:   env.KeycloakUrl,
 		KeycloakRealm: env.KeycloakRealm,
 		ClientID:      env.KeycloakClientID,
@@ -42,7 +43,7 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 	r.Get("/idp/", idpProxy)
 
 	// Proxy for temporary idp token (more specific path match takes precedence)
-	r.Get("/idp/profiles/token", idpProxy, middleware.KeycloakAuth(keycloakConfig))
+	r.Get("/idp/profiles/token", idpProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
 
 	// Proxy `/mobile-api` requests to mobile backend
 	logger.Info("About to register proxy for mobile-api requests")
@@ -58,6 +59,24 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 		}
 		hostFromURL := parsedURL.Host
 
+		// Proxy for Socket.IO connections
+		socketIOProxy := proxy.NewProxy(proxy.ProxyOptions{
+			Target:           env.MobileBackendURL,
+			StripPrefix:      "/ws-mobile-api", // No strip prefix for socket.io
+			Headers:          map[string]string{"X-API-Key": env.MobileBackendKey},
+			DisableForwarded: false,
+			OverrideHost:     "",
+		})
+		r.Handle("/ws-mobile-api/socket.io/", socketIOProxy)
+
+		// Keycloak config for any route that needs keycloak middleware auth
+		keycloakConfig := gwmiddleware.KeycloakAuthConfig{
+			KeycloakUrl:   env.KeycloakUrl,
+			KeycloakRealm: env.KeycloakRealm,
+			ClientID:      env.KeycloakClientID,
+			ClientSecret:  env.KeycloakClientSecret,
+		}
+
 		mobileBackendProxy := proxy.NewProxy(proxy.ProxyOptions{
 			Target:           env.MobileBackendURL,
 			StripPrefix:      "/mobile-api",
@@ -66,22 +85,13 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 			OverrideHost:     hostFromURL,
 		})
 
-		r.Handle("/mobile-api/", mobileBackendProxy)
+		r.Get("/mobile-api/", mobileBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
+		r.Post("/mobile-api/", mobileBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
+		r.Put("/mobile-api/", mobileBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
+		r.Delete("/mobile-api/", mobileBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
 
-		// Proxy for Socket.IO connections
-		socketIOProxy := proxy.NewProxy(proxy.ProxyOptions{
-			Target:           env.MobileBackendURL,
-			StripPrefix:      "/mobile-api", // No strip prefix for socket.io
-			Headers:          map[string]string{"X-API-Key": env.MobileBackendKey},
-			DisableForwarded: false,
-			OverrideHost:     "",
-		})
-		r.Handle("/mobile-api/socket.io/", socketIOProxy)
-
-		// r.Get("/mobile-api/", mobileBackendProxy)
-		// r.Post("/mobile-api/", mobileBackendProxy)
-		// r.Put("/mobile-api/", mobileBackendProxy)
-		// r.Delete("/mobile-api/", mobileBackendProxy)
+		// define public endpoints
+		r.Get("/mobile-api/esim/bundles", mobileBackendProxy)
 	}
 
 	// Health
