@@ -94,6 +94,42 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 		r.Get("/mobile-api/esim/bundles", mobileBackendProxy)
 	}
 
+	// proxy for `/network-api` requests to network backend
+	logger.Info("About to register proxy for network-api requests")
+	if env.NetworkBackendURL != "" && env.NetworkBackendKey != "" {
+		msg := fmt.Sprintf("Env url %s", env.NetworkBackendURL)
+		logger.Info(msg)
+
+		// Extract host from NetworkBackendURL for OverrideHost
+		parsedURL, err := url.Parse(env.NetworkBackendURL)
+		if err != nil {
+			logger.Error("Failed to parse NetworkBackendURL", zap.Error(err))
+			return nil, err
+		}
+		hostFromURL := parsedURL.Host
+	
+	// keycloak config for any route that needs keycloak middleware auth
+	keycloakConfig := gwmiddleware.KeycloakAuthConfig{
+		KeycloakUrl:   env.KeycloakUrl,
+		KeycloakRealm: env.KeycloakRealm,
+		ClientID:      env.KeycloakClientID,
+		ClientSecret:  env.KeycloakClientSecret,
+	}
+	networkBackendProxy := proxy.NewProxy(proxy.ProxyOptions{
+		Target:           env.NetworkBackendURL,
+		StripPrefix:      "/network-api",
+		Headers:          map[string]string{"X-API-Key": env.NetworkBackendKey},
+		DisableForwarded: true,
+		OverrideHost:     hostFromURL,
+		})
+
+		r.Get("/network-api/", networkBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
+		r.Post("/network-api/", networkBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
+		r.Put("/network-api/", networkBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
+		r.Delete("/network-api/", networkBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
+		
+	}
+
 	// Health
 	r.Get("/health", health)
 
