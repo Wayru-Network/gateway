@@ -20,6 +20,8 @@ type GatewayEnvironment struct {
 	IdpServiceKey        string
 	MobileBackendURL     string
 	MobileBackendKey     string
+	NetworkBackendURL    string
+	NetworkBackendKey    string
 }
 
 func LoadEnvironment() (GatewayEnvironment, error) {
@@ -70,6 +72,9 @@ func LoadEnvironment() (GatewayEnvironment, error) {
 	mobileBackendURL := strings.TrimSpace(os.Getenv("MOBILE_BACKEND_URL"))
 	mobileBackendKey := strings.TrimSpace(os.Getenv("MOBILE_BACKEND_KEY"))
 
+	networkBackendURL := strings.TrimSpace(os.Getenv("NETWORK_BACKEND_URL"))
+	networkBackendKey := strings.TrimSpace(os.Getenv("NETWORK_BACKEND_KEY"))
+
 	return GatewayEnvironment{
 		AppEnv:               appEnv,
 		Port:                 portInt,
@@ -81,5 +86,7 @@ func LoadEnvironment() (GatewayEnvironment, error) {
 		IdpServiceKey:        idpServiceKey,
 		MobileBackendURL:     mobileBackendURL,
 		MobileBackendKey:     mobileBackendKey,
+		NetworkBackendURL:    networkBackendURL,
+		NetworkBackendKey:    networkBackendKey,
 	}, nil
 }
