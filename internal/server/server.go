@@ -92,6 +92,7 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 
 		// define public endpoints
 		r.Get("/mobile-api/esim/bundles", mobileBackendProxy)
+		r.Post("/mobile-api/delete-account/has-deleted-account", mobileBackendProxy)
 	}
 
 	// proxy for `/network-api` requests to network backend
