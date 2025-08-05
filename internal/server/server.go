@@ -107,27 +107,63 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 			return nil, err
 		}
 		hostFromURL := parsedURL.Host
-	
-	// keycloak config for any route that needs keycloak middleware auth
-	keycloakConfig := gwmiddleware.KeycloakAuthConfig{
-		KeycloakUrl:   env.KeycloakUrl,
-		KeycloakRealm: env.KeycloakRealm,
-		ClientID:      env.KeycloakClientID,
-		ClientSecret:  env.KeycloakClientSecret,
-	}
-	networkBackendProxy := proxy.NewProxy(proxy.ProxyOptions{
-		Target:           env.NetworkBackendURL,
-		StripPrefix:      "/network-api",
-		Headers:          map[string]string{"X-API-Key": env.NetworkBackendKey},
-		DisableForwarded: true,
-		OverrideHost:     hostFromURL,
+
+		// keycloak config for any route that needs keycloak middleware auth
+		keycloakConfig := gwmiddleware.KeycloakAuthConfig{
+			KeycloakUrl:   env.KeycloakUrl,
+			KeycloakRealm: env.KeycloakRealm,
+			ClientID:      env.KeycloakClientID,
+			ClientSecret:  env.KeycloakClientSecret,
+		}
+		networkBackendProxy := proxy.NewProxy(proxy.ProxyOptions{
+			Target:           env.NetworkBackendURL,
+			StripPrefix:      "/network-api",
+			Headers:          map[string]string{"X-API-Key": env.NetworkBackendKey},
+			DisableForwarded: true,
+			OverrideHost:     hostFromURL,
 		})
 
 		r.Get("/network-api/", networkBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
 		r.Post("/network-api/", networkBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
 		r.Put("/network-api/", networkBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
 		r.Delete("/network-api/", networkBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
-		
+
+	}
+
+	// proxy for `/dashboard-api` requests to dashboard backend
+	logger.Info("About to register proxy for dashboard-api requests")
+	if env.DashboardBackendURL != "" && env.DashboardBackendKey != "" {
+		msg := fmt.Sprintf("Env url %s", env.DashboardBackendURL)
+		logger.Info(msg)
+
+		// Extract host from NetworkBackendURL for OverrideHost
+		parsedURL, err := url.Parse(env.NetworkBackendURL)
+		if err != nil {
+			logger.Error("Failed to parse NetworkBackendURL", zap.Error(err))
+			return nil, err
+		}
+		hostFromURL := parsedURL.Host
+
+		// keycloak config for any route that needs keycloak middleware auth
+		keycloakConfig := gwmiddleware.KeycloakAuthConfig{
+			KeycloakUrl:   env.KeycloakUrl,
+			KeycloakRealm: env.KeycloakRealm,
+			ClientID:      env.KeycloakClientID,
+			ClientSecret:  env.KeycloakClientSecret,
+		}
+		logger.Info("dashboard backend url", zap.String("url", env.DashboardBackendURL))
+		dashboardBackendProxy := proxy.NewProxy(proxy.ProxyOptions{
+			Target:           env.DashboardBackendURL,
+			StripPrefix:      "/dashboard",
+			Headers:          map[string]string{"X-API-Key": env.DashboardBackendKey},
+			DisableForwarded: true,
+			OverrideHost:     hostFromURL,
+		})
+
+		r.Get("/dashboard/", dashboardBackendProxy)
+		r.Post("/dashboard/", dashboardBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
+		r.Put("/dashboard/", dashboardBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
+		r.Delete("/dashboard/", dashboardBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
 	}
 
 	// Health
