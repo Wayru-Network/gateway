@@ -34,6 +34,10 @@ spec:
           objectName: mobile-backend-key
           objectType: secret
           objectVersion: ""
+        - |
+          objectName: dashboard-backend-key
+          objectType: secret
+          objectVersion: ""
   secretObjects:
     - secretName: {{ .Values.name }}
       type: Opaque
@@ -46,3 +50,5 @@ spec:
           key: IDP_SERVICE_KEY
         - objectName: mobile-backend-key
           key: MOBILE_BACKEND_KEY
+        - objectName: dashboard-backend-key
+          key: DASHBOARD_BACKEND_KEY
