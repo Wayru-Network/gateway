@@ -160,7 +160,7 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 			OverrideHost:     hostFromURL,
 		})
 
-		r.Get("/dashboard/", dashboardBackendProxy)
+		r.Get("/dashboard/", dashboardBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
 		r.Post("/dashboard/", dashboardBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
 		r.Put("/dashboard/", dashboardBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
 		r.Delete("/dashboard/", dashboardBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
