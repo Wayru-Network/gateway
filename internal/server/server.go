@@ -152,7 +152,6 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 			ClientID:      env.KeycloakClientID,
 			ClientSecret:  env.KeycloakClientSecret,
 		}
-		logger.Info("dashboard backend url", zap.String("url", env.DashboardBackendURL))
 		dashboardBackendProxy := proxy.NewProxy(proxy.ProxyOptions{
 			Target:           env.DashboardBackendURL,
 			StripPrefix:      "/dashboard",
@@ -161,7 +160,7 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 			OverrideHost:     hostFromURL,
 		})
 
-		r.Get("/dashboard/", dashboardBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
+		r.Get("/dashboard/", dashboardBackendProxy)
 		r.Post("/dashboard/", dashboardBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
 		r.Put("/dashboard/", dashboardBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
 		r.Delete("/dashboard/", dashboardBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
