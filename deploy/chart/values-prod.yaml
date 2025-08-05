@@ -1,5 +1,6 @@
 name: gateway
 namespace: network-services
+dashboardBackendURL: https://prod.api.az.wayru.tech
 env: prod
 image: wayruprod.azurecr.io/gateway
 imageTag: latest
