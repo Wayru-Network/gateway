@@ -44,6 +44,8 @@ spec:
               value: {{ .Values.env }}
             - name: PORT
               value: {{ .Values.port | quote }}
+            - name: DASHBOARD_BACKEND_URL
+              value: {{ .Values.dashboardBackendURL | quote }}
             - name: KEYCLOAK_URL
               value: {{ .Values.keycloakUrl | quote }}
             - name: KEYCLOAK_REALM
@@ -72,6 +74,11 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.name }}
                   key: MOBILE_BACKEND_KEY
+            - name: DASHBOARD_BACKEND_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.name }}
+                  key: DASHBOARD_BACKEND_KEY
           ports:
             - containerPort: {{ int .Values.port }}
               name: http
