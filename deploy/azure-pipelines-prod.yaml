@@ -19,7 +19,7 @@ resources:
 
 variables:
   # Container registry service connection established during pipeline creation
-  dockerRegistryServiceConnection: "wayruprod-registry"
+  dockerRegistryServiceConnection: "wayruprod-registry-2"
   imageRepository: "gateway"
   containerRegistry: "wayruprod.azurecr.io"
   dockerfilePath: "Dockerfile"

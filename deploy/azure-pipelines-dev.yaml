@@ -19,7 +19,7 @@ resources:
 
 variables:
   # Container registry service connection established during pipeline creation
-  dockerRegistryServiceConnection: "wayrudev-registry"
+  dockerRegistryServiceConnection: "wayrudev-registry-2"
   imageRepository: "gateway"
   containerRegistry: "wayrudev.azurecr.io"
   dockerfilePath: "Dockerfile"
@@ -44,15 +44,15 @@ stages:
         steps:
           - task: DownloadSecureFile@1
             name: sshKey
-            displayName: 'Download SSH Key'
+            displayName: "Download SSH Key"
             inputs:
-              secureFile: 'github_ssh_key'
+              secureFile: "github_ssh_key"
 
           - script: |
               mkdir -p .ssh
               cp $(sshKey.secureFilePath) .ssh/id_rsa
               chmod 600 .ssh/id_rsa
-            displayName: 'Setup SSH Key'
+            displayName: "Setup SSH Key"
 
           - task: Docker@2
             displayName: Build and push an image to container registry
@@ -67,11 +67,11 @@ stages:
                 latest
 
           - task: PublishPipelineArtifact@1
-            displayName: 'Publish Helm Chart'
+            displayName: "Publish Helm Chart"
             inputs:
               targetPath: $(helmChartPath)
-              artifact: 'chart'
-              publishLocation: 'pipeline'
+              artifact: "chart"
+              publishLocation: "pipeline"
 
   - stage: Deploy
     displayName: Deploy to Kubernetes
@@ -87,10 +87,10 @@ stages:
             deploy:
               steps:
                 - task: DownloadPipelineArtifact@2
-                  displayName: 'Download Helm Chart'
+                  displayName: "Download Helm Chart"
                   inputs:
-                    artifactName: 'chart'
-                    targetPath: '$(Pipeline.Workspace)/chart'
+                    artifactName: "chart"
+                    targetPath: "$(Pipeline.Workspace)/chart"
 
                 - task: HelmDeploy@0
                   displayName: "Deploy Gateway with Helm"
