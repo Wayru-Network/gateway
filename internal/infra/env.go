@@ -24,6 +24,7 @@ type GatewayEnvironment struct {
 	NetworkBackendKey    string
 	DashboardBackendURL  string
 	DashboardBackendKey  string
+	DashboardBackendAdminKey string
 }
 
 func LoadEnvironment() (GatewayEnvironment, error) {
@@ -80,6 +81,11 @@ func LoadEnvironment() (GatewayEnvironment, error) {
 	dashboardBackendURL := strings.TrimSpace(os.Getenv("DASHBOARD_BACKEND_URL"))
 	dashboardBackendKey := strings.TrimSpace(os.Getenv("DASHBOARD_BACKEND_KEY"))
 
+	dashboardBackendAdminKey := strings.TrimSpace(os.Getenv("DASHBOARD_BACKEND_ADMIN_KEY"))
+	if dashboardBackendAdminKey == "" {
+		return GatewayEnvironment{}, errors.New("DASHBOARD_BACKEND_ADMIN_KEY not set")
+	}
+
 	return GatewayEnvironment{
 		AppEnv:               appEnv,
 		Port:                 portInt,
@@ -95,5 +101,6 @@ func LoadEnvironment() (GatewayEnvironment, error) {
 		NetworkBackendKey:    networkBackendKey,
 		DashboardBackendURL:  dashboardBackendURL,
 		DashboardBackendKey:  dashboardBackendKey,
+		DashboardBackendAdminKey: dashboardBackendAdminKey,
 	}, nil
 }
