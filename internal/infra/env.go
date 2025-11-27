@@ -25,6 +25,8 @@ type GatewayEnvironment struct {
 	DashboardBackendURL  string
 	DashboardBackendKey  string
 	DashboardBackendAdminKey string
+	NasApiURL		  string
+	NasApiKey           string
 }
 
 func LoadEnvironment() (GatewayEnvironment, error) {
@@ -86,6 +88,16 @@ func LoadEnvironment() (GatewayEnvironment, error) {
 		return GatewayEnvironment{}, errors.New("DASHBOARD_BACKEND_ADMIN_KEY not set")
 	}
 
+	nasApiKey := strings.TrimSpace(os.Getenv("NAS_API_KEY"))
+	if nasApiKey == "" {
+		return GatewayEnvironment{}, errors.New("NAS_API_KEY not set")
+	}
+
+	nasApiURL := strings.TrimSpace(os.Getenv("NAS_API_URL"))
+	if nasApiURL == "" {
+		return GatewayEnvironment{}, errors.New("NAS_API_URL not set")
+	}
+
 	return GatewayEnvironment{
 		AppEnv:               appEnv,
 		Port:                 portInt,
@@ -102,5 +114,7 @@ func LoadEnvironment() (GatewayEnvironment, error) {
 		DashboardBackendURL:  dashboardBackendURL,
 		DashboardBackendKey:  dashboardBackendKey,
 		DashboardBackendAdminKey: dashboardBackendAdminKey,
+		NasApiKey:           nasApiKey,
+		NasApiURL:		  nasApiURL,
 	}, nil
 }
