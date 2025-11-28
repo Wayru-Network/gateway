@@ -9,6 +9,7 @@ servicePort: 80 # used in ingress and service
 host: gateway.prod.api.az.wayru.tech # used in ingress
 keycloakUrl: https://kc-1.wayru.tech
 keycloakRealm: wayru
+keycloakAdminRealm: global-admin
 idpServiceUrl: http://idp-api.network-services.svc.cluster.local
 mobileBackendUrl: https://mobile.prod.api.az.wayru.tech
 healthPath: /health
