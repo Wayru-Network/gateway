@@ -155,6 +155,14 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 		r.Delete("/dashboard/", dashboardBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
 	}
 
+	// Keycloak config for admin panel routes
+	adminKeycloakConfig := gwmiddleware.KeycloakAuthConfig{
+		KeycloakUrl:   env.KeycloakUrl,
+		KeycloakRealm: env.KeycloakAdminRealm,
+		ClientID:      env.KeycloakAdminClientID,
+		ClientSecret:  env.KeycloakAdminClientSecret,
+	}
+
 	// Proxy for /admin requests from admin panel to dashboard backend
 	dashboardBackendAdminProxy := proxy.NewProxy(proxy.ProxyOptions{
 		Target:           env.DashboardBackendURL,
@@ -164,12 +172,12 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 		OverrideHost:     "",
 	})
 
-	r.Get("/admin/api/nfnodes", dashboardBackendAdminProxy)
-	r.Get("/admin/api/nfnodes/{id}", dashboardBackendAdminProxy)
-	r.Get("/admin/api/rewards-per-epoches", dashboardBackendAdminProxy)
-	r.Get("/admin/api/rewards-per-epoches/{id}", dashboardBackendAdminProxy)
-	r.Get("/admin/api/transaction-trackers", dashboardBackendAdminProxy)
-	r.Get("/admin/api/transaction-trackers/{id}", dashboardBackendAdminProxy)
+	r.Get("/admin/api/nfnodes", dashboardBackendAdminProxy, gwmiddleware.KeycloakAuth(adminKeycloakConfig))
+	r.Get("/admin/api/nfnodes/{id}", dashboardBackendAdminProxy, gwmiddleware.KeycloakAuth(adminKeycloakConfig))
+	r.Get("/admin/api/rewards-per-epoches", dashboardBackendAdminProxy, gwmiddleware.KeycloakAuth(adminKeycloakConfig))
+	r.Get("/admin/api/rewards-per-epoches/{id}", dashboardBackendAdminProxy, gwmiddleware.KeycloakAuth(adminKeycloakConfig))
+	r.Get("/admin/api/transaction-trackers", dashboardBackendAdminProxy, gwmiddleware.KeycloakAuth(adminKeycloakConfig))
+	r.Get("/admin/api/transaction-trackers/{id}", dashboardBackendAdminProxy, gwmiddleware.KeycloakAuth(adminKeycloakConfig))
 
 	// Health
 	r.Get("/health", health)
