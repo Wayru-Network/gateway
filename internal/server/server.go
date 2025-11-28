@@ -171,18 +171,6 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 	r.Get("/admin/api/transaction-trackers", dashboardBackendAdminProxy)
 	r.Get("/admin/api/transaction-trackers/{id}", dashboardBackendAdminProxy)
 
-	// Proxy for /nas requests to NAS backend
-	nasApiProxy := proxy.NewProxy(proxy.ProxyOptions{
-		Target: env.NasApiURL,
-		StripPrefix: "/nas",
-		Headers: map[string]string{"Authorization": fmt.Sprintf("Bearer %s", env.NasApiKey)},
-		DisableForwarded: true,
-		OverrideHost:     "",
-	})
-
-	r.Post("/nas/enterprise/user", nasApiProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
-	r.Get("/nas/enterprise/user/{keycloak_id}", nasApiProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
-
 	// Health
 	r.Get("/health", health)
 
