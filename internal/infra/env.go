@@ -25,6 +25,9 @@ type GatewayEnvironment struct {
 	DashboardBackendURL  string
 	DashboardBackendKey  string
 	DashboardBackendAdminKey string
+	KeycloakAdminRealm        string
+	KeycloakAdminClientID     string
+	KeycloakAdminClientSecret string
 }
 
 func LoadEnvironment() (GatewayEnvironment, error) {
@@ -86,6 +89,21 @@ func LoadEnvironment() (GatewayEnvironment, error) {
 		return GatewayEnvironment{}, errors.New("DASHBOARD_BACKEND_ADMIN_KEY not set")
 	}
 
+	keycloakAdminRealm := strings.TrimSpace(os.Getenv("KEYCLOAK_ADMIN_REALM"))
+	if keycloakAdminRealm == "" {
+		return GatewayEnvironment{}, errors.New("KEYCLOAK_ADMIN_REALM not set")
+	}
+
+	keycloakAdminClientID := strings.TrimSpace(os.Getenv("KEYCLOAK_ADMIN_CLIENT_ID"))
+	if keycloakAdminClientID == "" {
+		return GatewayEnvironment{}, errors.New("KEYCLOAK_ADMIN_CLIENT_ID not set")
+	}
+
+	keycloakAdminClientSecret := strings.TrimSpace(os.Getenv("KEYCLOAK_ADMIN_CLIENT_SECRET"))
+	if keycloakAdminClientSecret == "" {
+		return GatewayEnvironment{}, errors.New("KEYCLOAK_ADMIN_CLIENT_SECRET not set")
+	}
+
 	return GatewayEnvironment{
 		AppEnv:               appEnv,
 		Port:                 portInt,
@@ -102,5 +120,8 @@ func LoadEnvironment() (GatewayEnvironment, error) {
 		DashboardBackendURL:  dashboardBackendURL,
 		DashboardBackendKey:  dashboardBackendKey,
 		DashboardBackendAdminKey: dashboardBackendAdminKey,
+		KeycloakAdminRealm:        keycloakAdminRealm,
+		KeycloakAdminClientID:     keycloakAdminClientID,
+		KeycloakAdminClientSecret: keycloakAdminClientSecret,
 	}, nil
 }
