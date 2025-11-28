@@ -46,11 +46,7 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 	r.Get("/idp/profiles/token", idpProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
 
 	// Proxy `/mobile-api` requests to mobile backend
-	logger.Info("About to register proxy for mobile-api requests")
 	if env.MobileBackendURL != "" && env.MobileBackendKey != "" {
-		msg := fmt.Sprintf("Env url %s", env.MobileBackendURL)
-		logger.Info(msg)
-
 		// Extract host from MobileBackendURL for OverrideHost
 		parsedURL, err := url.Parse(env.MobileBackendURL)
 		if err != nil {
@@ -97,11 +93,7 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 	}
 
 	// proxy for `/network-api` requests to network backend
-	logger.Info("About to register proxy for network-api requests")
 	if env.NetworkBackendURL != "" && env.NetworkBackendKey != "" {
-		msg := fmt.Sprintf("Env url %s", env.NetworkBackendURL)
-		logger.Info(msg)
-
 		// Extract host from NetworkBackendURL for OverrideHost
 		parsedURL, err := url.Parse(env.NetworkBackendURL)
 		if err != nil {
@@ -133,11 +125,7 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 	}
 
 	// proxy for `/dashboard-api` requests to dashboard backend
-	logger.Info("About to register proxy for dashboard-api requests")
 	if env.DashboardBackendURL != "" && env.DashboardBackendKey != "" {
-		msg := fmt.Sprintf("Env url %s", env.DashboardBackendURL)
-		logger.Info(msg)
-
 		// Extract host from NetworkBackendURL for OverrideHost
 		parsedURL, err := url.Parse(env.NetworkBackendURL)
 		if err != nil {
@@ -166,6 +154,30 @@ func NewServer(env infra.GatewayEnvironment) (*http.Server, error) {
 		r.Put("/dashboard/", dashboardBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
 		r.Delete("/dashboard/", dashboardBackendProxy, gwmiddleware.KeycloakAuth(keycloakConfig))
 	}
+
+	// Keycloak config for admin panel routes
+	adminKeycloakConfig := gwmiddleware.KeycloakAuthConfig{
+		KeycloakUrl:   env.KeycloakUrl,
+		KeycloakRealm: env.KeycloakAdminRealm,
+		ClientID:      env.KeycloakAdminClientID,
+		ClientSecret:  env.KeycloakAdminClientSecret,
+	}
+
+	// Proxy for /admin requests from admin panel to dashboard backend
+	dashboardBackendAdminProxy := proxy.NewProxy(proxy.ProxyOptions{
+		Target:           env.DashboardBackendURL,
+		StripPrefix:      "/admin",
+		Headers:          map[string]string{"X-API-Key": env.DashboardBackendAdminKey, "Authorization": fmt.Sprintf("Bearer %s", env.DashboardBackendAdminKey)},
+		DisableForwarded: true,
+		OverrideHost:     "",
+	})
+
+	r.Get("/admin/api/nfnodes", dashboardBackendAdminProxy, gwmiddleware.KeycloakAuth(adminKeycloakConfig))
+	r.Get("/admin/api/nfnodes/{id}", dashboardBackendAdminProxy, gwmiddleware.KeycloakAuth(adminKeycloakConfig))
+	r.Get("/admin/api/rewards-per-epoches", dashboardBackendAdminProxy, gwmiddleware.KeycloakAuth(adminKeycloakConfig))
+	r.Get("/admin/api/rewards-per-epoches/{id}", dashboardBackendAdminProxy, gwmiddleware.KeycloakAuth(adminKeycloakConfig))
+	r.Get("/admin/api/transaction-trackers", dashboardBackendAdminProxy, gwmiddleware.KeycloakAuth(adminKeycloakConfig))
+	r.Get("/admin/api/transaction-trackers/{id}", dashboardBackendAdminProxy, gwmiddleware.KeycloakAuth(adminKeycloakConfig))
 
 	// Health
 	r.Get("/health", health)

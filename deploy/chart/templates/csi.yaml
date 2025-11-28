@@ -38,6 +38,18 @@ spec:
           objectName: dashboard-backend-key
           objectType: secret
           objectVersion: ""
+        - |
+          objectName: dashboard-backend-admin-key
+          objectType: secret
+          objectVersion: ""
+        - |
+          objectName: keycloak-admin-client-id
+          objectType: secret
+          objectVersion: ""
+        - |
+          objectName: keycloak-admin-client-secret
+          objectType: secret
+          objectVersion: ""
   secretObjects:
     - secretName: {{ .Values.name }}
       type: Opaque
@@ -52,3 +64,9 @@ spec:
           key: MOBILE_BACKEND_KEY
         - objectName: dashboard-backend-key
           key: DASHBOARD_BACKEND_KEY
+        - objectName: dashboard-backend-admin-key
+          key: DASHBOARD_BACKEND_ADMIN_KEY
+        - objectName: keycloak-admin-client-id
+          key: KEYCLOAK_ADMIN_CLIENT_ID
+        - objectName: keycloak-admin-client-secret
+          key: KEYCLOAK_ADMIN_CLIENT_SECRET
